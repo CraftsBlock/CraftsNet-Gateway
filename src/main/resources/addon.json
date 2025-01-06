@@ -1,0 +1,11 @@
+{
+  "name": "CNetGateway",
+  "main": "de.craftsblock.cnet.modules.gateway.Gateway",
+  "authors": [
+    "Philipp Maywald",
+    "CraftsBlock"
+  ],
+  "website": "https://craftsblock.de",
+  "version": "1.0.0",
+  "dependencies": []
+}
