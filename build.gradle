@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+group = 'de.craftsblock.craftsnet.modules'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.craftsblock.de/releases" }
+    maven { url "https://repo.craftsblock.de/experimental" }
+}
+
+dependencies {
+    // CraftsBlock dependencies ----------------------------------------------------------------------------------------
+
+    implementation "de.craftsblock:craftscore:3.8.0-SNAPSHOT"
+    implementation "de.craftsblock:craftsnet:3.2.2-SNAPSHOT"
+
+    // Third party dependencies ----------------------------------------------------------------------------------------
+
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
