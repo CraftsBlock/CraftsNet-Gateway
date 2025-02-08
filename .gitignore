@@ -67,7 +67,11 @@ bin/
 hs_err_pid*
 replay_pid*
 
+# Java Test
+src/test
+
 # CraftsNet
+debug
 addons
 logs
 libraries
