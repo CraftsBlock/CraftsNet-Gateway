@@ -32,11 +32,11 @@ public class SocketListener implements ListenerAdapter {
 
         try {
             if (!proxyCandidate) return;
-            event.allowWithoutMapping(true);
 
             Cluster cluster = gateway.getMatchingCluster(client.getPath(), client.getDomain(), exchange.scheme());
             if (cluster == null) return;
-
+            
+            event.allowWithoutMapping(true);
             WebSocketProxyClient proxyClient = cluster.getChild(exchange.scheme()).newWSProxyClient(client, client.getPath());
             client.getSession().put("proxied.counterpart", proxyClient);
         } finally {
