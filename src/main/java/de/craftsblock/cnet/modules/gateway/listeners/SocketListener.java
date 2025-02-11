@@ -1,9 +1,10 @@
 package de.craftsblock.cnet.modules.gateway.listeners;
 
+import de.craftsblock.cnet.modules.gateway.Gateway;
+import de.craftsblock.cnet.modules.gateway.entities.Cluster;
 import de.craftsblock.cnet.modules.gateway.proxy.websocket.WebSocketProxyClient;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.ListenerAdapter;
-import de.craftsblock.craftsnet.api.utils.Scheme;
 import de.craftsblock.craftsnet.api.websocket.Frame;
 import de.craftsblock.craftsnet.api.websocket.SocketExchange;
 import de.craftsblock.craftsnet.api.websocket.WebSocketClient;
@@ -17,6 +18,12 @@ import de.craftsblock.craftsnet.events.sockets.message.ReceivedPongMessageEvent;
 @AutoRegister
 public class SocketListener implements ListenerAdapter {
 
+    private final Gateway gateway;
+
+    public SocketListener(Gateway gateway) {
+        this.gateway = gateway;
+    }
+
     @EventHandler
     public void handleConnect(ClientConnectEvent event) {
         SocketExchange exchange = event.getExchange();
@@ -27,6 +34,11 @@ public class SocketListener implements ListenerAdapter {
             if (!proxyCandidate) return;
             event.allowWithoutMapping(true);
 
+            Cluster cluster = gateway.getMatchingCluster(client.getPath(), client.getDomain(), exchange.scheme());
+            if (cluster == null) return;
+
+            WebSocketProxyClient proxyClient = cluster.getChild(exchange.scheme()).newWSProxyClient(client, client.getPath());
+            client.getSession().put("proxied.counterpart", proxyClient);
         } finally {
             client.getSession().put("proxied.candidate", proxyCandidate);
         }
