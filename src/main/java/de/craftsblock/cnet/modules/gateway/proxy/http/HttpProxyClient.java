@@ -16,8 +16,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -36,8 +34,8 @@ public class HttpProxyClient {
         this.child = child;
 
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.of(2, ChronoUnit.SECONDS))
-                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(child.getHttpConnectTimeout())
+                .followRedirects(child.getHttpRedirectPolicy())
                 .build();
     }
 
@@ -57,6 +55,11 @@ public class HttpProxyClient {
                             "gzip, deflate" + (child.getGateway().streamEncoderRegistry().isRegistered("br") ? ", br" : "") + ", zstd"
                     );
 
+                    case "etag", "if-match ", " if-none-match ",
+                         "if-modified-since", "if-unmodified-since" -> {
+                        if (child.isHttpCacheAllowed())
+                            requestBuilder.setHeader(key, String.join(", ", values));
+                    }
                     default -> requestBuilder.setHeader(key, String.join(", ", values));
                 }
             } catch (IllegalArgumentException e) {
