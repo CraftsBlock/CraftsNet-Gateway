@@ -5,11 +5,13 @@ import de.craftsblock.cnet.modules.gateway.entities.ClusterChild;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.http.Response;
+import de.craftsblock.craftsnet.api.http.encoding.StreamEncoder;
 import de.craftsblock.craftsnet.api.utils.Scheme;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -49,24 +51,46 @@ public class HttpProxyClient {
 
         incoming.getHeaders().forEach((key, values) -> {
             try {
-                requestBuilder.setHeader(key, String.join(", ", values));
+                switch (key.toLowerCase()) {
+                    case "accept-encoding" -> requestBuilder.setHeader(
+                            "Accept-Encoding",
+                            "gzip, deflate" + (child.getGateway().streamEncoderRegistry().isRegistered("br") ? ", br" : "") + ", zstd"
+                    );
+
+                    default -> requestBuilder.setHeader(key, String.join(", ", values));
+                }
             } catch (IllegalArgumentException e) {
                 if (!e.getMessage().startsWith("restricted")) throw new RuntimeException(e);
             }
         });
 
+        HttpRequest request = requestBuilder.build();
         HttpResponse<InputStream> response = httpClient.send(
-                requestBuilder.build(),
+                request,
                 responseInfo -> HttpResponse.BodySubscribers.ofInputStream()
         );
 
         outgoing.setCode(response.statusCode());
-        response.headers().map().forEach((key, values) ->
-                values.forEach(value -> outgoing.addHeader(key, value))
-        );
+        response.headers().map().forEach((key, values) -> {
+            switch (key.toLowerCase()) {
+                case "content-length", "content-encoding" -> {
+                }
+                case "content-type" -> outgoing.setHeader(key, values.get(0));
+                default -> values.forEach(value -> outgoing.addHeader(key, value));
+            }
+        });
 
-        InputStream responseBody = response.body();
-        if (responseBody != null) outgoing.print(responseBody);
+        try (InputStream rawBody = response.body()) {
+            String encoding = response.headers().firstValue("Content-Encoding").orElse("identity");
+            StreamEncoder encoder = cluster.getGateway().streamEncoderRegistry().retrieveEncoder(encoding);
+            if (encoder == null)
+                throw new UnsupportedEncodingException("Received body with unsupported encoding (" + encoding +
+                        ") from upstream server (" + buildRequestURI(incoming) + ")");
+
+            try (InputStream responseBody = encoder.encodeInputStream(rawBody);) {
+                outgoing.print(responseBody);
+            }
+        }
     }
 
     private URI buildRequestURI(Request incoming) {
