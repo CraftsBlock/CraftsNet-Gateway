@@ -16,6 +16,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -47,6 +49,7 @@ public class HttpProxyClient {
         HttpRequest.BodyPublisher body = buildBodyPublisher(incoming);
         requestBuilder.method(incoming.getHttpMethod().name(), body);
 
+        List<String> previousIPs = new ArrayList<>();
         incoming.getHeaders().forEach((key, values) -> {
             try {
                 switch (key.toLowerCase()) {
@@ -60,12 +63,34 @@ public class HttpProxyClient {
                         if (child.isHttpCacheAllowed())
                             requestBuilder.setHeader(key, String.join(", ", values));
                     }
+                    case "x-forwarded-for" -> previousIPs.addAll(values);
                     default -> requestBuilder.setHeader(key, String.join(", ", values));
                 }
             } catch (IllegalArgumentException e) {
                 if (!e.getMessage().startsWith("restricted")) throw new RuntimeException(e);
             }
         });
+
+        previousIPs.add(incoming.unsafe().getRemoteAddress().getAddress().getHostAddress());
+
+        StringBuilder forwarded = new StringBuilder("by=" + child.getIdHex() + ";");
+
+        for (String ip : previousIPs) {
+            forwarded.append("for=");
+            if (ip.matches("([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}")) forwarded.append("\"[").append(ip).append("]\"");
+            else forwarded.append(ip);
+            forwarded.append(", ");
+        }
+        forwarded.delete(forwarded.length() - 2, forwarded.length());
+        forwarded.append(";");
+
+        forwarded.append("host=").append(incoming.getDomain()).append(";proto=").append(exchange.scheme().getName());
+        requestBuilder.setHeader("Forwarded", forwarded.toString());
+
+        requestBuilder.setHeader("X-Forwarded-For", String.join(", ", previousIPs));
+        requestBuilder.setHeader("X-Forwarded-Host", incoming.getDomain());
+        requestBuilder.setHeader("X-Forwarded-Protocol", exchange.scheme().getName());
+        requestBuilder.setHeader("X-Forwarded-Ssl", exchange.scheme().equals(Scheme.HTTPS) ? "on" : "off");
 
         HttpRequest request = requestBuilder.build();
         HttpResponse<InputStream> response = httpClient.send(
