@@ -47,6 +47,7 @@ public class Gateway extends Addon {
     public @Nullable Cluster getMatchingCluster(String url, String domain, Scheme scheme) {
         return clusters.stream()
                 .filter(cluster -> cluster.isBaseApplicable(url) && cluster.isDomainApplicable(domain))
+                .filter(cluster -> cluster.hasChild(scheme))
                 .findFirst().orElse(null);
     }
 
