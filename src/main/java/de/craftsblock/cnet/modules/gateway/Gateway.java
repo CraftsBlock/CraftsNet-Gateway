@@ -4,19 +4,21 @@ import de.craftsblock.cnet.modules.gateway.entities.Cluster;
 import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.Addon;
 import de.craftsblock.craftsnet.addon.meta.annotations.Meta;
+import de.craftsblock.craftsnet.api.utils.Scheme;
 import de.craftsblock.craftsnet.builder.ActivateType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Meta(name = "CNetGateway")
 public class Gateway extends Addon {
 
-    private final ConcurrentHashMap<Long, Cluster> clusters = new ConcurrentHashMap<>();
+    private final ConcurrentLinkedQueue<Cluster> clusters = new ConcurrentLinkedQueue<>();
 
     public static void main(String[] args) throws IOException {
         CraftsNet.create(Gateway.class)
@@ -34,13 +36,16 @@ public class Gateway extends Addon {
     }
 
     public @NotNull Cluster createCluster(@NotNull String base, @NotNull String domain) {
-        Cluster cluster = new Cluster(base, domain);
-        this.clusters.put(cluster.getIdLong(), cluster);
+        if (this.clusters.isEmpty())
+            this.craftsNet().getBuilder().withSkipDefaultRoute(true);
+
+        Cluster cluster = new Cluster(this, base, domain);
+        this.clusters.add(cluster);
         return cluster;
     }
 
     public @Unmodifiable @NotNull Collection<Cluster> getClusters() {
-        return Collections.unmodifiableCollection(clusters.values());
+        return Collections.unmodifiableCollection(clusters);
     }
 
 }
