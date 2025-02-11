@@ -1,25 +1,33 @@
 package de.craftsblock.cnet.modules.gateway.entities;
 
+import de.craftsblock.cnet.modules.gateway.Gateway;
 import de.craftsblock.craftscore.utils.id.Snowflake;
-import de.craftsblock.craftsnet.utils.ByteBuffer;
+import de.craftsblock.craftsnet.CraftsNet;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class Entity {
 
+    private final Gateway gateway;
+
     private final long id;
     private final String idHex;
 
-    public Entity() {
-        this(Snowflake.generate());
+    public Entity(Gateway gateway) {
+        this(gateway, Snowflake.generate());
     }
 
-    public Entity(@NotNull ByteBuffer buffer) {
-        this(buffer.readLong());
-    }
-
-    protected Entity(long id) {
+    protected Entity(Gateway gateway, long id) {
+        this.gateway = gateway;
         this.id = id;
         this.idHex = Long.toHexString(this.id);
+    }
+
+    public Gateway getGateway() {
+        return gateway;
+    }
+
+    public CraftsNet getCraftsNet() {
+        return gateway.craftsNet();
     }
 
     public @NotNull String getId() {
@@ -30,12 +38,8 @@ public abstract class Entity {
         return this.id;
     }
 
-    public String getLongHex() {
+    public String getIdHex() {
         return this.idHex;
-    }
-
-    public void write(@NotNull ByteBuffer buffer) {
-        buffer.writeLong(this.getIdLong());
     }
 
 }
