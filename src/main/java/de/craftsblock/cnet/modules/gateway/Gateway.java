@@ -25,6 +25,7 @@ public class Gateway extends Addon {
                 .withArgs(args)
                 .withWebServer(ActivateType.ENABLED)
                 .withWebSocketServer(ActivateType.ENABLED)
+                .withApplyResponseEncoding(true)
                 .build();
     }
 
