@@ -28,9 +28,6 @@ public class Gateway extends Addon {
                 .build();
     }
 
-    @Override
-    public void onEnable() {
-
     public @NotNull Cluster createCluster(@NotNull String base) {
         return this.createCluster(base, ".*");
     }
@@ -42,6 +39,22 @@ public class Gateway extends Addon {
         Cluster cluster = new Cluster(this, base, domain);
         this.clusters.add(cluster);
         return cluster;
+    }
+
+    public void removeCluster(@NotNull String base) {
+        this.removeCluster(base, "");
+    }
+
+    public void removeCluster(@NotNull String base, @NotNull String domain) {
+        if (this.clusters.isEmpty()) return;
+
+        this.clusters.stream()
+                .filter(cluster -> cluster.isBaseApplicable(base) && (domain.isBlank() || cluster.isDomainApplicable(domain)))
+                .forEach(this::removeCluster);
+    }
+
+    public void removeCluster(@NotNull Cluster cluster) {
+        this.clusters.remove(cluster);
     }
 
     public @Nullable Cluster getMatchingCluster(String url, String domain, Scheme scheme) {
