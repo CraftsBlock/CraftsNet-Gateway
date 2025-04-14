@@ -26,6 +26,8 @@ public class SocketListener implements ListenerAdapter {
 
     @EventHandler
     public void handleConnect(ClientConnectEvent event) {
+        if (event.isCancelled()) return;
+
         SocketExchange exchange = event.getExchange();
         WebSocketClient client = exchange.client();
         boolean proxyCandidate = !event.hasMappings();

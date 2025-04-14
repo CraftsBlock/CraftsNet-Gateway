@@ -25,6 +25,8 @@ public class RequestListener implements ListenerAdapter {
 
     @EventHandler
     public void handlePreRequest(PreRequestEvent event) throws IOException, InterruptedException {
+        if (event.isCancelled()) return;
+
         Exchange exchange = event.getExchange();
         Response response = exchange.response();
         Request request = exchange.request();
