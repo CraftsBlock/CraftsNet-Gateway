@@ -19,8 +19,10 @@ repositories {
 dependencies {
     // CraftsBlock dependencies ----------------------------------------------------------------------------------------
 
-    implementation "de.craftsblock:craftscore:3.8.2-SNAPSHOT"
-    implementation "de.craftsblock:craftsnet:3.3.3-SNAPSHOT"
+    implementation "de.craftsblock:craftscore:3.8.3-SNAPSHOT"
+    implementation "de.craftsblock:craftsnet:3.3.4-pre1"
+
+    implementation "de.craftsblock.craftsnet.modules:streamencoders:1.0.0-SNAPSHOT"
 
     // Third party dependencies ----------------------------------------------------------------------------------------
 

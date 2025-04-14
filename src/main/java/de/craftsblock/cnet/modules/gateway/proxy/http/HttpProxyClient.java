@@ -53,10 +53,15 @@ public class HttpProxyClient {
         incoming.getHeaders().forEach((key, values) -> {
             try {
                 switch (key.toLowerCase()) {
-                    case "accept-encoding" -> requestBuilder.setHeader(
-                            "Accept-Encoding",
-                            "gzip, deflate" + (child.getGateway().streamEncoderRegistry().isRegistered("br") ? ", br" : "") + ", zstd"
-                    );
+                    case "accept-encoding" -> {
+                        List<String> supportedEncoders = child.getGateway().streamEncoderRegistry().getStreamEncoders()
+                                .stream().filter(StreamEncoder::isAvailable)
+                                .map(StreamEncoder::getEncodingName)
+                                .map(String::toLowerCase).filter(values::contains).toList();
+                        if (supportedEncoders.isEmpty()) return;
+
+                        requestBuilder.setHeader(key, String.join(", ", supportedEncoders));
+                    }
 
                     case "etag", "if-match ", " if-none-match ",
                          "if-modified-since", "if-unmodified-since" -> {
