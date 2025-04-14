@@ -40,8 +40,8 @@ public class RequestListener implements ListenerAdapter {
 
         if (!cluster.hasChild(exchange.scheme())) {
             response.print(Json.empty()
-                    .set("message", "Cluster has no children")
-                    .set("status", "404"));
+                    .set("status", "404")
+                    .set("message", "Cluster has no children"));
             return;
         }
 
