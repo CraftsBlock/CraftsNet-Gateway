@@ -95,7 +95,6 @@ public class Cluster extends Entity {
     }
 
     public boolean isBaseApplicable(String path) {
-        System.out.println(path + " matching to " + this.baseMatcher.pattern().pattern());
         return this.baseMatcher.reset(path).matches();
     }
 
