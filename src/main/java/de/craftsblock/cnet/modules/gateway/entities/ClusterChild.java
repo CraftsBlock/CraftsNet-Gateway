@@ -44,7 +44,7 @@ public class ClusterChild extends Entity {
     }
 
     public @NotNull WebSocketProxyClient newWSProxyClient(@NotNull WebSocketClient counterpart, @NotNull String path) {
-        return new WebSocketProxyClient(counterpart, this.scheme, this.host, this.port, this.wrapBase(path));
+        return new WebSocketProxyClient(this.cluster, this, counterpart, this.scheme, this.host, this.port, this.wrapBase(path));
     }
 
     public @NotNull Cluster getCluster() {

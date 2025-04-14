@@ -152,4 +152,12 @@ public class HttpProxyClient {
                 .collect(Collectors.joining("&"));
     }
 
+    public Cluster getCluster() {
+        return cluster;
+    }
+
+    public ClusterChild getChild() {
+        return child;
+    }
+
 }
