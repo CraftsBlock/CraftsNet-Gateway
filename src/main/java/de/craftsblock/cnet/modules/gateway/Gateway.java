@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-@Meta(name = "CNetGateway")
+@Meta(name = "Gateway")
 public class Gateway extends Addon {
 
     private final ConcurrentLinkedQueue<Cluster> clusters = new ConcurrentLinkedQueue<>();
