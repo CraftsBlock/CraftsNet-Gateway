@@ -63,7 +63,7 @@ public class HttpProxyClient {
                         requestBuilder.setHeader(key, String.join(", ", supportedEncoders));
                     }
 
-                    case "etag", "if-match ", " if-none-match ",
+                    case "etag", "if-match ", "if-none-match ",
                          "if-modified-since", "if-unmodified-since" -> {
                         if (child.isHttpCacheAllowed())
                             requestBuilder.setHeader(key, String.join(", ", values));
@@ -120,7 +120,7 @@ public class HttpProxyClient {
                 throw new UnsupportedEncodingException("Received body with unsupported encoding (" + encoding +
                         ") from upstream server (" + buildRequestURI(incoming) + ")");
 
-            try (InputStream responseBody = encoder.encodeInputStream(rawBody);) {
+            try (InputStream responseBody = encoder.encodeInputStream(rawBody)) {
                 outgoing.print(responseBody);
             }
         }
