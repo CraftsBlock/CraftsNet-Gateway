@@ -19,7 +19,7 @@ public class ClusterChild extends Entity {
     private final int port;
     private final String base;
 
-    private boolean httpCacheAllowed = true;
+    private boolean httpCacheAllowed = false;
     private Duration httpConnectTimeout = Duration.of(2, ChronoUnit.SECONDS);
     private HttpClient.Redirect httpRedirectPolicy = HttpClient.Redirect.NORMAL;
 
