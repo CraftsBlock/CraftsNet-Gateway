@@ -48,7 +48,8 @@ public class SocketListener implements ListenerAdapter {
 
     @EventHandler
     public void handleDisconnect(ClientDisconnectEvent event) {
-        WebSocketClient client = event.getExchange().client();
+        SocketExchange exchange = event.getExchange();
+        WebSocketClient client = exchange.client();
         if (!isProxyCandidate(client)) return;
 
         WebSocketProxyClient counterpart = client.getSession().getAsType("proxied.counterpart", WebSocketProxyClient.class);
@@ -58,7 +59,8 @@ public class SocketListener implements ListenerAdapter {
 
     @EventHandler
     public void handleIncoming(IncomingSocketMessageEvent event) {
-        WebSocketClient client = event.getExchange().client();
+        SocketExchange exchange = event.getExchange();
+        WebSocketClient client = exchange.client();
         if (!isProxyCandidate(client)) return;
 
         WebSocketProxyClient counterpart = client.getSession().getAsType("proxied.counterpart", WebSocketProxyClient.class);
