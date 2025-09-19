@@ -1,8 +1,17 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+}
+
+def env = new Properties()
+file(".env").withInputStream {
+    env.load(it)
 }
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
     withJavadocJar()
     withSourcesJar()
 }
@@ -12,8 +21,8 @@ version = '1.0.0-pre3'
 
 repositories {
     mavenCentral()
-    maven { url "https://repo.craftsblock.de/releases" }
-    maven { url "https://repo.craftsblock.de/experimental" }
+    maven { url = "https://repo.craftsblock.de/releases" }
+    maven { url = "https://repo.craftsblock.de/experimental" }
 }
 
 dependencies {
@@ -30,5 +39,45 @@ dependencies {
 
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+publishing {
+    publications {
+        normal(MavenPublication) {
+            artifactId = "gateway"
+            from components.java
+            pom {
+                name = 'Gateway'
+                description = 'Simple proxy service for craftsnet'
+
+                scm {
+                    url = 'https://github.com/CraftsBlock/CraftsNet-Gateway'
+                    connection = 'scm:git:git://github.com/CraftsBlock/CraftsNet-Gateway.git'
+                    developerConnection = 'scm:git:git@github.com:CraftsBlock/CraftsNet-Gateway.git'
+                }
+
+                issueManagement {
+                    system = 'github'
+                    url = 'https://github.com/CraftsBlock/CraftsNet-Gateway/issues'
+                }
+
+                licenses {
+                    license {
+                        name = 'GNU General Public License v3.0'
+                        url = 'https://github.com/CraftsBlock/CraftsNet-Gateway/blob/master/LICENSE'
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url('https://repo.craftsblock.de/experimental')
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username = env["username"]
+                password = env["password"]
+            }
+        }
+    }
+}
